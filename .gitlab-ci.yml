@@ -19,6 +19,6 @@ deploy_staging:
     - echo "$SSH_KEY" > ~/.ssh/id_ed25519
     - chmod 600 ~/.ssh/id_ed25519
   script:
-    - ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no "$STAGING_USER@$STAGING_HOST" "cd /opt/devops-notes && git pull && docker compose up -d --build"
+    - ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no "$STAGING_USER@$STAGING_HOST" "cd /opt/devops-notes && git pull && docker-compose up -d --build"
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
