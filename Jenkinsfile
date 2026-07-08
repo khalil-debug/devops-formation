@@ -24,7 +24,11 @@ pipeline {
       }
     }
     stage('Image') {
-      when { branch 'main' }
+      when {
+        expression {
+          env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main'
+        }
+      }
       steps {
         withCredentials([usernamePassword(credentialsId: 'gitlab-registry', usernameVariable: 'U', passwordVariable: 'P')]) {
         sh '''
