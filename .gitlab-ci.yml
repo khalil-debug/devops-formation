@@ -1,13 +1,26 @@
-stages: [build, test, deploy]
-default: { image: node:20-alpine }
-build:
-  stage: build
-  script: [ "cd api && npm install" ]
+stages: [test, deploy]
 test:
   stage: test
-  script: [ "cd api && npm install && npm test" ]
-deploy-staging:
+  image: node:24
+  before_script:
+    - cd api
+    - npm install
+  script:
+    - npm test
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+deploy_staging:
   stage: deploy
-  script: [ "echo 'Déploiement staging...'" ]
-  environment: { name: staging }
-  rules: [ { if: '$CI_COMMIT_BRANCH == "main"' } ]
+  image: alpine:latest
+  needs:
+    - test
+  before_script:
+    - apk add --no-cache openssh-client
+    - mkdir -p ~/.ssh
+    - echo "$SSH_KEY" > ~/.ssh/id_ed25519
+    - chmod 600 ~/.ssh/id_ed25519
+  script:
+    - ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no "$STAGING_USER@$STAGING_HOST" "cd /opt/devops-notes && git pull && docker compose up -d --build"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
